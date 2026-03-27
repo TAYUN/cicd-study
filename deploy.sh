@@ -32,7 +32,7 @@ start() {
     fi
 
     # 部署新版本
-    cp -r "$APP_DIR/dist" "$WEB_ROOT/" || { log "❌ 复制失败"; exit 1; }
+    cp -r "$APP_DIR/dist" "$WEB_ROOT/" || { log "❌ 复制失败！"; exit 1; }
     
     # 设置权限（使用服务器实际的 www 用户）
     chown -R www:www "$WEB_ROOT/dist"
