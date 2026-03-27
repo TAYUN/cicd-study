@@ -16,8 +16,8 @@ start() {
     log "开始部署 $APP_NAME..."
 
     # 检查制品包是否存在
-    if [ ! -d "$APP_DIR/dist" ]; then
-        log "错误: 找不到 $APP_DIR/dist 目录"
+    if [ ! -f "$APP_DIR/index.html" ]; then
+        log "错误: 找不到 $APP_DIR/index.html 文件"
         log "请确认云效流水线已正确下载制品包到 $APP_DIR"
         exit 1
     fi
