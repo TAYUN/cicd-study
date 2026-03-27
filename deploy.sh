@@ -23,26 +23,28 @@ start() {
     fi
 
     # 清理旧备份（保留最近3个）
-    ls -t "$WEB_ROOT"/dist.bak.* 2>/dev/null | tail -n +$((KEEP_BACKUPS + 1)) | xargs rm -rf 2>/dev/null
+    ls -t "$WEB_ROOT"/app.bak.* 2>/dev/null | tail -n +$((KEEP_BACKUPS + 1)) | xargs rm -rf 2>/dev/null
 
     # 备份旧版本
-    if [ -d "$WEB_ROOT/dist" ]; then
-        mv "$WEB_ROOT/dist" "$WEB_ROOT/dist.bak.$(date +%s)"
+    if [ -d "$WEB_ROOT/app" ]; then
+        mv "$WEB_ROOT/app" "$WEB_ROOT/app.bak.$(date +%s)"
         log "✅ 已备份旧版本"
     fi
 
-    # 部署新版本
-    cp -r "$APP_DIR/dist" "$WEB_ROOT/" || { log "❌ 复制失败！"; exit 1; }
+    # 部署新版本（直接从 APP_DIR 复制，无需 dist 子目录）
+    mkdir -p "$WEB_ROOT/app"
+    cp -r "$APP_DIR"/* "$WEB_ROOT/app/" || { log "❌ 复制失败！"; exit 1; }
     
     # 设置权限（使用服务器实际的 www 用户）
-    chown -R www:www "$WEB_ROOT/dist"
-    chmod -R 755 "$WEB_ROOT/dist"
+    chown -R www:www "$WEB_ROOT/app"
+    chmod -R 755 "$WEB_ROOT/app"
     log "✅ 已设置权限"
 
     # 健康检查
-    if [ -f "$WEB_ROOT/dist/index.html" ]; then
+    if [ -f "$WEB_ROOT/app/index.html" ]; then
         log "✅ 部署验证通过"
         log "🎉 $APP_NAME 部署成功！"
+        log "🌐 访问地址: http://$(curl -s ifconfig.me 2>/dev/null || echo '服务器IP')/app/"
     else
         log "❌ 部署失败：index.html 不存在"
         exit 1
