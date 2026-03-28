@@ -1,0 +1,119 @@
+sources:
+  repo_0:
+    type: codeup
+    name: cicd-study_I5gW
+    endpoint: https://codeup.aliyun.com/69c64a67fa2a62bc8595295f/TAYUN/cicd-study.git
+    branch: main
+    triggerEvents:
+    - push
+    certificate:
+      type: serviceConnection
+      serviceConnection: jgrmw589fa65cgxs
+defaultWorkspace: repo_0
+stages:
+  stage_0:
+    name: 测试
+    jobs:
+      job_0:
+        name: JavaScript 代码扫描
+        runsOn:
+          group: public/cn-hongkong
+          labels: linux,amd64
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          step_0:
+            name: JavaScript代码扫描
+            step: JavaScriptCodeScan
+            with:
+              localDependencies: '*'
+              incrementalScan: false
+              useLocalRules: false
+              exclusion: |
+                test/
+                build/
+                node_modules/
+                vendor/
+                dist/
+                **/*.min.js
+                **/*-min.js
+                **/*.bundle.js
+              nodeVersion: '22.21'
+        driven: auto
+        plugins: []
+  stage_1:
+    name: 构建
+    jobs:
+      job_0:
+        name: Node.js 构建
+        runsOn:
+          group: public/cn-hangzhou
+          labels: linux,amd64
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          step_0:
+            name: 配置 .npmrc 文件
+            step: SetupNpmrc
+            with:
+              npmPrivateRepoConfigPath: /root/.npmrc
+          step_1:
+            name: 安装 Node 环境
+            step: SetupNode
+            with:
+              versionType: predefined
+              npmType: pnpm
+              nodeVersion: '22.21'
+              installYarn: false
+          step_2:
+            name: 执行命令
+            step: Command
+            with:
+              variables: []
+              ifGivenShell: false
+              run: |-
+                # input your command here
+                pnpm install
+                pnpm build
+                # 将 deploy.sh 复制到 dist 目录
+                cp deploy.sh dist/
+                # 然后打包 dist 目录
+                cd dist && tar czvf ../package.tgz .
+          step_3:
+            name: 构建物上传
+            step: ArtifactUpload
+            with:
+              artifact: Artifacts_${PIPELINE_ID}
+              includePathInArtifact: false
+              repo: flow_generic_repo
+              filePath:
+              - dist/
+              uploadType: packages
+              version: ${BUILD_NUMBER}
+              serviceConnection: atiuouu31hx3qwta
+        driven: auto
+        plugins: []
+  stage_2:
+    name: 部署
+    jobs:
+      job_0:
+        name: 主机部署
+        component: VMDeploy
+        driven: auto
+        with:
+          downloadArtifact: true
+          artifact: $[stages.stage_1.job_0.step_3.artifacts.Artifacts_${PIPELINE_ID}]
+          useEncode: false
+          deployTimeoutPerHost: 240
+          pauseStrategy: firstBatchPause
+          machineGroup: DDNO42fCoOFmbGis
+          run: |-
+            # 流水线部署脚本
+            # 确保目录存在
+            mkdir -p /home/admin/app
+            # 解压制品包
+            tar zxvf /home/admin/app/package.tgz -C /home/admin/app/
+            # 执行部署
+            sh /home/admin/app/deploy.sh restart
+          artifactDownloadPath: /home/admin/app/package.tgz
+          executeUser: root
+          batchNumber: 2
+        plugins: []
