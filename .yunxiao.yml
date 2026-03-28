@@ -70,13 +70,10 @@ stages:
               variables: []
               ifGivenShell: false
               run: |-
-                # 安装依赖并构建
                 pnpm install
                 pnpm build
-                # 将 deploy.sh 复制到 dist 目录
                 cp deploy.sh dist/
-                # 打包（保留 dist 目录结构）
-                tar czvf package.tgz dist/
+                tar czvf package.tgz -C dist .
           step_3:
             name: 构建物上传
             step: ArtifactUpload
@@ -108,7 +105,7 @@ stages:
           run: |-
             mkdir -p /home/admin/app
             tar zxvf /home/admin/app/package.tgz -C /home/admin/app/
-            sh /home/admin/app/dist/deploy.sh restart
+            sh /home/admin/app/deploy.sh restart
           artifactDownloadPath: /home/admin/app/package.tgz
           executeUser: root
           batchNumber: 2

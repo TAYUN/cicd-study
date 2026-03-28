@@ -4,7 +4,7 @@
 # 用法: sh deploy.sh [start|restart]
 
 APP_NAME="cicd-study"
-APP_DIR="/home/admin/app/dist"  # 制品包解压后 dist 在此目录
+APP_DIR="/home/admin/app"
 WEB_ROOT="/www/server/nginx/html"
 KEEP_BACKUPS=3
 
