@@ -70,13 +70,13 @@ stages:
               variables: []
               ifGivenShell: false
               run: |-
-                # input your command here
+                # 安装依赖并构建
                 pnpm install
                 pnpm build
                 # 将 deploy.sh 复制到 dist 目录
                 cp deploy.sh dist/
-                # 然后打包 dist 目录
-                cd dist && tar czvf ../package.tgz .
+                # 打包（保留 dist 目录结构）
+                tar czvf package.tgz dist/
           step_3:
             name: 构建物上传
             step: ArtifactUpload
@@ -85,7 +85,7 @@ stages:
               includePathInArtifact: false
               repo: flow_generic_repo
               filePath:
-              - dist/
+              - package.tgz
               uploadType: packages
               version: ${BUILD_NUMBER}
               serviceConnection: atiuouu31hx3qwta
@@ -106,13 +106,9 @@ stages:
           pauseStrategy: firstBatchPause
           machineGroup: DDNO42fCoOFmbGis
           run: |-
-            # 流水线部署脚本
-            # 确保目录存在
             mkdir -p /home/admin/app
-            # 解压制品包
             tar zxvf /home/admin/app/package.tgz -C /home/admin/app/
-            # 执行部署
-            sh /home/admin/app/deploy.sh restart
+            sh /home/admin/app/dist/deploy.sh restart
           artifactDownloadPath: /home/admin/app/package.tgz
           executeUser: root
           batchNumber: 2
