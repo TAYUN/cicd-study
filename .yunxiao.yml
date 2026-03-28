@@ -73,7 +73,9 @@ stages:
                 pnpm install
                 pnpm build
                 cp deploy.sh dist/
+                ls -la dist/
                 tar czvf package.tgz -C dist .
+                tar tzvf package.tgz
           step_3:
             name: 构建物上传
             step: ArtifactUpload
@@ -105,6 +107,7 @@ stages:
           run: |-
             mkdir -p /home/admin/app
             tar zxvf /home/admin/app/package.tgz -C /home/admin/app/
+            ls -la /home/admin/app/
             sh /home/admin/app/deploy.sh restart
           artifactDownloadPath: /home/admin/app/package.tgz
           executeUser: root
