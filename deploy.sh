@@ -35,6 +35,7 @@ start() {
     # 部署新版本
     mkdir -p "$WEB_ROOT/app" || { log "❌ 创建目录失败"; exit 1; }
     cp -r "$APP_DIR"/* "$WEB_ROOT/app/" || { log "❌ 复制失败"; exit 1; }
+    rm -f "$WEB_ROOT/app/package.tgz"  # 删除打包文件
     
     # 设置权限
     chown -R www:www "$WEB_ROOT/app"
